@@ -1,0 +1,41 @@
+# ========================
+# Backend - Spring Boot
+# ========================
+selfquiz-backend/target/
+selfquiz-backend/.mvn/wrapper/maven-wrapper.jar
+selfquiz-backend/*.iml
+selfquiz-backend/.idea/
+selfquiz-backend/*.class
+selfquiz-backend/mvnw.cmd.bak
+
+# H2 Database files
+*.db
+*.mv.db
+*.trace.db
+
+# ========================
+# Frontend - React / Vite
+# ========================
+selfquiz-frontend/node_modules/
+selfquiz-frontend/dist/
+selfquiz-frontend/.env
+selfquiz-frontend/.env.local
+selfquiz-frontend/.env.*.local
+
+# ========================
+# IDE & OS
+# ========================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
