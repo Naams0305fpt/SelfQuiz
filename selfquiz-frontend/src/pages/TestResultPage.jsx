@@ -39,34 +39,45 @@ export default function TestResultPage() {
 
         <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Chi tiết kết quả</h3>
 
-        {result.results.map((r, idx) => (
-          <div key={r.questionId} className={`question-review ${r.isCorrect ? 'correct' : 'wrong'}`}>
-            <div className={`question-status ${r.isCorrect ? 'correct' : 'wrong'}`}>
-              {r.isCorrect ? '✅ Đúng' : '❌ Sai'} — Câu {idx + 1}
+        {result.results.map((r, idx) => {
+          const isQuestionCorrect = r.isCorrect || r.correct;
+          return (
+          <div key={r.questionId} className={`question-review ${isQuestionCorrect ? 'correct' : 'wrong'}`}>
+            <div className={`question-status ${isQuestionCorrect ? 'correct' : 'wrong'}`}>
+              {isQuestionCorrect ? '✅ Đúng' : '❌ Sai'} — Câu {idx + 1}
             </div>
             <Markdown>{r.content}</Markdown>
 
             <div style={{ marginTop: '0.75rem' }}>
               {r.answers.map((a) => {
                 let style = { padding: '0.5rem 0.75rem', marginBottom: '0.3rem', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid var(--border)', background: 'var(--bg-input)' };
-                if (a.isCorrect || a.correct) style = { ...style, border: '1px solid var(--success)', background: 'var(--success-bg)' };
-                if (a.id === r.selectedAnswerId && !r.isCorrect) style = { ...style, border: '1px solid var(--danger)', background: 'var(--danger-bg)' };
+                
+                const isCorrectAnswer = r.correctAnswerIds.includes(a.id);
+                const isSelected = r.selectedAnswerIds.includes(a.id);
+
+                if (isCorrectAnswer) style = { ...style, border: '1px solid var(--success)', background: 'var(--success-bg)' };
+                if (isSelected && !isCorrectAnswer) style = { ...style, border: '1px solid var(--danger)', background: 'var(--danger-bg)' };
+                
+                let icon = '○';
+                if (isCorrectAnswer) icon = '✅';
+                else if (isSelected && !isCorrectAnswer) icon = '❌';
+
                 return (
                   <div key={a.id} style={style}>
-                    {(a.isCorrect || a.correct) ? '✅' : a.id === r.selectedAnswerId ? '❌' : '○'} {a.content}
+                    {icon} {a.content}
                   </div>
                 );
               })}
             </div>
 
-            {!r.isCorrect && r.explanation && (
+            {!isQuestionCorrect && r.explanation && (
               <div className="explanation-box">
                 <strong>Giải thích</strong>
                 <Markdown>{r.explanation}</Markdown>
               </div>
             )}
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );

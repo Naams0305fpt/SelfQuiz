@@ -44,7 +44,7 @@ export default function DeckDetailPage() {
   const updateAnswer = (idx, field, value) => {
     const newAnswers = [...form.answers];
     if (field === 'isCorrect') {
-      newAnswers.forEach((a, i) => (a.isCorrect = i === idx));
+      newAnswers[idx].isCorrect = value;
     } else {
       newAnswers[idx][field] = value;
     }
@@ -67,14 +67,20 @@ export default function DeckDetailPage() {
     if (!form.content.trim()) return toast.error('Nội dung câu hỏi không được trống');
     if (!form.explanation.trim()) return toast.error('Giải thích không được trống');
     if (form.answers.some(a => !a.content.trim())) return toast.error('Nội dung đáp án không được trống');
-    if (form.answers.filter(a => a.isCorrect).length !== 1) return toast.error('Phải có đúng 1 đáp án đúng');
+    if (form.answers.filter(a => a.isCorrect).length < 1) return toast.error('Phải có ít nhất 1 đáp án đúng');
 
     try {
+      const payload = {
+        content: form.content,
+        explanation: form.explanation,
+        answers: form.answers.map(a => ({ content: a.content, correct: a.isCorrect }))
+      };
+      
       if (editingQuestion) {
-        await questionApi.update(editingQuestion.id, form);
+        await questionApi.update(editingQuestion.id, payload);
         toast.success('Cập nhật thành công');
       } else {
-        await questionApi.create(id, form);
+        await questionApi.create(id, payload);
         toast.success('Thêm câu hỏi thành công');
       }
       setShowModal(false);
@@ -165,10 +171,10 @@ export default function DeckDetailPage() {
               <textarea className="form-textarea" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Nhập nội dung câu hỏi..." rows={4} autoFocus />
             </div>
             <div className="form-group">
-              <label className="form-label">Đáp án ({form.answers.length}/5) — chọn đáp án đúng</label>
+              <label className="form-label">Đáp án ({form.answers.length}/5) — chọn các đáp án đúng</label>
               {form.answers.map((a, i) => (
                 <div key={i} style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', alignItems: 'center' }}>
-                  <input type="radio" name="correct" checked={a.isCorrect} onChange={() => updateAnswer(i, 'isCorrect', true)} style={{ accentColor: 'var(--accent)' }} />
+                  <input type="checkbox" checked={a.isCorrect} onChange={(e) => updateAnswer(i, 'isCorrect', e.target.checked)} style={{ accentColor: 'var(--accent)', width: '18px', height: '18px' }} />
                   <input className="form-input" value={a.content} onChange={(e) => updateAnswer(i, 'content', e.target.value)} placeholder={`Đáp án ${i + 1}`} style={{ flex: 1 }} />
                   {form.answers.length > 2 && (
                     <button className="btn-icon" onClick={() => removeAnswer(i)} title="Xóa đáp án">✕</button>

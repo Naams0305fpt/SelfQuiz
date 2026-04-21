@@ -22,8 +22,8 @@ public class TestSubmitResponse {
         private Long questionId;
         private String content;
         private boolean isCorrect;
-        private Long selectedAnswerId;
-        private Long correctAnswerId;
+        private List<Long> selectedAnswerIds;
+        private List<Long> correctAnswerIds;
         private String explanation; // null if answered correctly
         private List<AnswerDetail> answers;
     }

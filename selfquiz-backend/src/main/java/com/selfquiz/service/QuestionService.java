@@ -80,8 +80,8 @@ public class QuestionService {
         long correctCount = request.getAnswers().stream()
                 .filter(a -> a.isCorrect())
                 .count();
-        if (correctCount != 1) {
-            throw new BusinessException("Câu hỏi phải có đúng 1 đáp án đúng (hiện có " + correctCount + ")");
+        if (correctCount == 0) {
+            throw new BusinessException("Câu hỏi phải có ít nhất 1 đáp án đúng");
         }
     }
 

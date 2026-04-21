@@ -31,8 +31,19 @@ export default function TestTakePage() {
     generate();
   }, []);
 
-  const selectAnswer = (questionId, answerId) => {
-    setAnswers({ ...answers, [questionId]: answerId });
+  const selectAnswer = (questionId, answerId, multipleSelect) => {
+    setAnswers(prev => {
+      const current = prev[questionId] || [];
+      if (multipleSelect) {
+        if (current.includes(answerId)) {
+          return { ...prev, [questionId]: current.filter(id => id !== answerId) };
+        } else {
+          return { ...prev, [questionId]: [...current, answerId] };
+        }
+      } else {
+        return { ...prev, [questionId]: [answerId] };
+      }
+    });
   };
 
   const toggleFlag = () => {
@@ -40,7 +51,7 @@ export default function TestTakePage() {
   };
 
   const handleSubmit = async () => {
-    const unanswered = questions.filter(q => !answers[q.questionId]).length;
+    const unanswered = questions.filter(q => !answers[q.questionId] || answers[q.questionId].length === 0).length;
     if (unanswered > 0 && !window.confirm(`Còn ${unanswered} câu chưa trả lời. Bạn vẫn muốn nộp?`)) return;
 
     setSubmitting(true);
@@ -52,8 +63,8 @@ export default function TestTakePage() {
         timeTakenSeconds: timeTaken,
         answers: questions.map(q => ({
           questionId: q.questionId,
-          selectedAnswerId: answers[q.questionId] || null,
-        })).filter(a => a.selectedAnswerId),
+          selectedAnswerIds: answers[q.questionId] || [],
+        })).filter(a => a.selectedAnswerIds.length > 0),
       });
       navigate('/test/result', { state: { result: data, deckId, deckName } });
     } catch (e) {
@@ -96,10 +107,10 @@ export default function TestTakePage() {
           {q.answers.map((a) => (
             <div
               key={a.answerId}
-              className={`radio-option ${answers[q.questionId] === a.answerId ? 'selected' : ''}`}
-              onClick={() => selectAnswer(q.questionId, a.answerId)}
+              className={`radio-option ${(answers[q.questionId] || []).includes(a.answerId) ? 'selected' : ''}`}
+              onClick={() => selectAnswer(q.questionId, a.answerId, q.multipleSelect)}
             >
-              <div className="radio-dot" />
+              <div className="radio-dot" style={{ borderRadius: q.multipleSelect ? '4px' : '50%' }} />
               <Markdown>{a.content}</Markdown>
             </div>
           ))}
@@ -128,8 +139,8 @@ export default function TestTakePage() {
           {questions.map((q, i) => (
             <button key={i} onClick={() => setCurrentIdx(i)} style={{
               width: '36px', height: '36px', borderRadius: '8px', border: `1px solid ${i === currentIdx ? 'var(--accent)' : 'var(--border)'}`,
-              background: answers[q.questionId] ? 'var(--accent-glow)' : 'var(--bg-card)',
-              color: flagged[q.questionId] ? 'var(--warning)' : answers[q.questionId] ? 'var(--accent-light)' : 'var(--text-muted)',
+              background: (answers[q.questionId] && answers[q.questionId].length > 0) ? 'var(--accent-glow)' : 'var(--bg-card)',
+              color: flagged[q.questionId] ? 'var(--warning)' : (answers[q.questionId] && answers[q.questionId].length > 0) ? 'var(--accent-light)' : 'var(--text-muted)',
               cursor: 'pointer', fontSize: '0.8rem', fontWeight: i === currentIdx ? '700' : '400', fontFamily: 'var(--font)',
             }}>
               {i + 1}

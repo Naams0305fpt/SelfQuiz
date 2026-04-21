@@ -68,7 +68,9 @@ public class DeckService {
     }
 
     private DeckResponse toResponse(Deck deck) {
-        long questionCount = questionRepository.countByDeckIdAndIsDeletedFalse(deck.getId());
+        long questionCount = deck.getQuestions().stream()
+                .filter(q -> !q.isDeleted())
+                .count();
         return new DeckResponse(
                 deck.getId(),
                 deck.getSubject().getId(),

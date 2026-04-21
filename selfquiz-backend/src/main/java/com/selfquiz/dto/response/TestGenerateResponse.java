@@ -17,6 +17,7 @@ public class TestGenerateResponse {
     public static class TestQuestion {
         private Long questionId;
         private String content;
+        private boolean multipleSelect;
         private List<TestAnswer> answers;
     }
 

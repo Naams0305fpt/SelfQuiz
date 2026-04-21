@@ -58,7 +58,11 @@ public class TestService {
                     );
                     // Fisher-Yates shuffle for answers
                     Collections.shuffle(answers);
-                    return new TestGenerateResponse.TestQuestion(q.getId(), q.getContent(), answers);
+                    
+                    long correctCount = q.getAnswers().stream().filter(Answer::isCorrect).count();
+                    boolean multipleSelect = correctCount > 1;
+
+                    return new TestGenerateResponse.TestQuestion(q.getId(), q.getContent(), multipleSelect, answers);
                 })
                 .toList();
 
@@ -87,12 +91,17 @@ public class TestService {
             Question question = questionMap.get(userAnswer.getQuestionId());
             if (question == null) continue;
 
-            Answer correctAnswer = question.getAnswers().stream()
+            List<Long> correctAnswerIds = question.getAnswers().stream()
                     .filter(Answer::isCorrect)
-                    .findFirst()
-                    .orElse(null);
+                    .map(Answer::getId)
+                    .sorted()
+                    .toList();
 
-            boolean isCorrect = correctAnswer != null && correctAnswer.getId().equals(userAnswer.getSelectedAnswerId());
+            List<Long> selectedAnswerIds = userAnswer.getSelectedAnswerIds() != null
+                    ? userAnswer.getSelectedAnswerIds().stream().sorted().toList()
+                    : new ArrayList<>();
+
+            boolean isCorrect = !correctAnswerIds.isEmpty() && correctAnswerIds.equals(selectedAnswerIds);
             if (isCorrect) correctCount++;
 
             List<TestSubmitResponse.AnswerDetail> answerDetails = question.getAnswers().stream()
@@ -103,8 +112,8 @@ public class TestService {
                     question.getId(),
                     question.getContent(),
                     isCorrect,
-                    userAnswer.getSelectedAnswerId(),
-                    correctAnswer != null ? correctAnswer.getId() : null,
+                    userAnswer.getSelectedAnswerIds(),
+                    correctAnswerIds,
                     isCorrect ? null : question.getExplanation(),
                     answerDetails
             ));

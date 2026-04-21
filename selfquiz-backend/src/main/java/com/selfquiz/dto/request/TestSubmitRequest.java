@@ -20,7 +20,6 @@ public class TestSubmitRequest {
     public static class TestAnswerRequest {
         @NotNull
         private Long questionId;
-        @NotNull
-        private Long selectedAnswerId;
+        private List<Long> selectedAnswerIds;
     }
 }
