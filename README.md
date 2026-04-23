@@ -8,8 +8,8 @@
 |---|---|---|
 | **Backend** | Spring Boot | 3.5.x |
 | **Language** | Java | 25 |
-| **Database** | H2 (file-based) | 2.3 |
-| **ORM** | Spring Data JPA + Hibernate | 7.0 |
+| **Database** | Truy xuất từ SQL Server (Express/Developer) | 2019+ |
+| **ORM** | Spring Data JPA + Hibernate | 6.6 |
 | **Frontend** | React | 18.x |
 | **Build Tool** | Vite | 8.x |
 | **HTTP Client** | Axios | 1.9.x |
@@ -106,6 +106,20 @@ npm install
 npm run dev
 
 # App: http://localhost:5173
+```
+
+## 🗄️ Database Environment (.env)
+
+Hệ thống đã được thiết lập để kết nối vào **SQL Server**. Bạn cần file `.env.properties` đặt tại thư mục gốc của backend `selfquiz-backend/.env.properties`:
+
+```properties
+DB_HOST=localhost
+DB_INSTANCE=SQLEXPRESS
+DB_NAME=SelfQuiz
+DB_USERNAME=sa
+DB_PASSWORD=your_password_here
+# Set true nếu dùng Windows Auth
+DB_AUTH_INTEGRATED=false
 ```
 
 ## 🗄️ Database Schema (ER Diagram)
