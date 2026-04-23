@@ -19,7 +19,7 @@ public interface QuestionRepository extends JpaRepository<Question, Long> {
     long countByDeckIdAndIsDeletedFalse(Long deckId);
 
     @EntityGraph(attributePaths = "answers")
-    @Query(value = "SELECT q FROM Question q WHERE q.deck.id = :deckId AND q.isDeleted = false ORDER BY FUNCTION('RAND')")
+    @Query(value = "SELECT q FROM Question q WHERE q.deck.id = :deckId AND q.isDeleted = false ORDER BY FUNCTION('NEWID')")
     List<Question> findRandomByDeckId(@Param("deckId") Long deckId, Pageable pageable);
 
     @Override

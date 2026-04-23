@@ -13,6 +13,10 @@ selfquiz-backend/mvnw.cmd.bak
 *.mv.db
 *.trace.db
 
+# Secrets
+selfquiz-backend/.env
+selfquiz-backend/.env.properties
+
 # ========================
 # Frontend - React / Vite
 # ========================
