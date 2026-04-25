@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { deckApi, questionApi } from '../services/api';
 import ConfirmDialog from '../components/ConfirmDialog';
 import Markdown from '../components/Markdown';
+import ImportModal from '../components/ImportModal';
 import toast from 'react-hot-toast';
 
 export default function DeckDetailPage() {
@@ -11,9 +12,10 @@ export default function DeckDetailPage() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [expanded, setExpanded] = useState(null);
+  const [activeQuestionIdx, setActiveQuestionIdx] = useState(0);
 
   const emptyForm = { content: '', explanation: '', answers: [{ content: '', isCorrect: true }, { content: '', isCorrect: false }] };
   const [form, setForm] = useState(emptyForm);
@@ -93,6 +95,9 @@ export default function DeckDetailPage() {
       await questionApi.delete(deleteTarget.id);
       toast.success('Đã xóa câu hỏi');
       setDeleteTarget(null);
+      if (activeQuestionIdx >= questions.length - 1) {
+        setActiveQuestionIdx(Math.max(0, questions.length - 2));
+      }
       loadData();
     } catch (e) { toast.error('Lỗi khi xóa'); }
   };
@@ -118,6 +123,7 @@ export default function DeckDetailPage() {
             style={questions.length === 0 ? { opacity: 0.4, cursor: 'not-allowed' } : {}}>
             🎯 Làm bài
           </Link>
+          <button className="btn btn-secondary" onClick={() => setShowImportModal(true)}>📥 Import</button>
           <button className="btn btn-primary" onClick={openCreate}>＋ Thêm câu hỏi</button>
         </div>
       </div>
@@ -128,34 +134,72 @@ export default function DeckDetailPage() {
           <p>Chưa có câu hỏi nào. Bấm "Thêm câu hỏi" để bắt đầu!</p>
         </div>
       ) : (
-        <div>
-          {questions.map((q, idx) => (
-            <div key={q.id} className="question-review" style={{ cursor: 'pointer' }} onClick={() => setExpanded(expanded === q.id ? null : q.id)}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Câu {idx + 1}</div>
-                  <Markdown>{q.content}</Markdown>
-                </div>
-                <div style={{ display: 'flex', gap: '0.25rem', marginLeft: '0.5rem' }}>
-                  <button className="btn-icon" onClick={(e) => { e.stopPropagation(); openEdit(q); }}>✏️</button>
-                  <button className="btn-icon" onClick={(e) => { e.stopPropagation(); setDeleteTarget(q); }}>🗑️</button>
-                </div>
-              </div>
-              {expanded === q.id && (
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                  {q.answers.map((a) => (
-                    <div key={a.id} style={{ padding: '0.5rem 0.75rem', marginBottom: '0.4rem', borderRadius: '8px', background: (a.correct || a.isCorrect) ? 'var(--success-bg)' : 'var(--bg-input)', border: `1px solid ${(a.correct || a.isCorrect) ? 'var(--success)' : 'var(--border)'}`, fontSize: '0.9rem' }}>
-                      {(a.correct || a.isCorrect) ? '✅' : '○'} {a.content}
+        <div className="question-workspace">
+          {/* Cột trái: Lưới điều hướng */}
+          <div className="question-sidebar">
+            <div className="sidebar-title">
+              <span>Danh sách câu hỏi</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{questions.length} câu</span>
+            </div>
+            <div className="question-grid">
+              {questions.map((q, idx) => (
+                <button 
+                  key={q.id}
+                  className={`question-nav-btn ${activeQuestionIdx === idx ? 'active' : ''}`}
+                  onClick={() => setActiveQuestionIdx(idx)}
+                >
+                  {idx + 1}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Cột phải: Chi tiết câu hỏi đang chọn */}
+          <div className="question-detail-pane">
+            {questions[activeQuestionIdx] && (() => {
+              const q = questions[activeQuestionIdx];
+              return (
+                <div className="question-review">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--accent-light)', fontWeight: '600', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        Câu hỏi {activeQuestionIdx + 1}
+                      </div>
+                      <Markdown>{q.content}</Markdown>
                     </div>
-                  ))}
-                  <div className="explanation-box">
-                    <strong>Giải thích</strong>
-                    <Markdown>{q.explanation}</Markdown>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
+                      <button className="btn-icon" onClick={() => openEdit(q)} title="Sửa câu hỏi">✏️</button>
+                      <button className="btn-icon" onClick={() => setDeleteTarget(q)} title="Xóa câu hỏi">🗑️</button>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem', fontWeight: '500' }}>Các đáp án:</h4>
+                    {q.answers.map((a) => (
+                      <div key={a.id} style={{ 
+                        padding: '0.75rem 1rem', 
+                        marginBottom: '0.5rem', 
+                        borderRadius: 'var(--radius-md)', 
+                        background: (a.correct || a.isCorrect) ? 'var(--success-bg)' : 'var(--bg-input)', 
+                        border: `1px solid ${(a.correct || a.isCorrect) ? 'var(--success)' : 'var(--border)'}`, 
+                        fontSize: '0.95rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        {(a.correct || a.isCorrect) ? <span style={{color: 'var(--success)'}}>✅</span> : <span style={{color: 'var(--text-muted)'}}>○</span>} 
+                        <span>{a.content}</span>
+                      </div>
+                    ))}
+                    <div className="explanation-box" style={{ marginTop: '1.5rem' }}>
+                      <strong>Giải thích chi tiết</strong>
+                      <Markdown>{q.explanation}</Markdown>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ))}
+              );
+            })()}
+          </div>
         </div>
       )}
 
@@ -198,6 +242,16 @@ export default function DeckDetailPage() {
       )}
 
       {deleteTarget && <ConfirmDialog title="Xóa câu hỏi" message="Bạn có chắc muốn xóa câu hỏi này?" onConfirm={handleDelete} onCancel={() => setDeleteTarget(null)} />}
+
+      <ImportModal 
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        deckId={id}
+        onSuccess={(count) => {
+          toast.success(`Đã import thành công ${count} câu hỏi!`);
+          loadData();
+        }}
+      />
     </>
   );
 }

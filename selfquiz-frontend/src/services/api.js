@@ -49,4 +49,19 @@ export const historyApi = {
   delete: (id) => api.delete(`/test-histories/${id}`),
 };
 
+// === Import ===
+export const importApi = {
+  previewText: (deckId, rawText) => api.post(`/decks/${deckId}/import/preview/text`, { rawText }),
+  previewExcel: (deckId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post(`/decks/${deckId}/import/preview/excel`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+  commit: (deckId, questions) => api.post(`/decks/${deckId}/import/commit`, questions),
+};
+
 export default api;
