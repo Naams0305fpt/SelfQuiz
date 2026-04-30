@@ -3,7 +3,33 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'http://localhost:8080/api/v1',
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    const url = originalRequest?.url || '';
+
+    // Bỏ qua toàn bộ lỗi 401 từ các endpoint /auth/* để tránh loop
+    // AuthContext tự xử lý lỗi từ /auth/me một cách graceful
+    const isAuthEndpoint = url.includes('/auth/');
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
+      originalRequest._retry = true;
+      try {
+        await api.post('/auth/refresh-token');
+        // Refresh thành công, gọi lại request ban đầu
+        return api(originalRequest);
+      } catch (e) {
+        // Refresh thất bại → reject để AuthContext xử lý redirect
+        return Promise.reject(e);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // === Subjects ===
 export const subjectApi = {
@@ -62,6 +88,14 @@ export const importApi = {
     });
   },
   commit: (deckId, questions) => api.post(`/decks/${deckId}/import/commit`, questions),
+};
+
+// === Auth ===
+export const authApi = {
+  login: (data) => api.post('/auth/login', data),
+  register: (data) => api.post('/auth/register', data),
+  logout: () => api.post('/auth/logout'),
+  me: () => api.get('/auth/me')
 };
 
 export default api;
