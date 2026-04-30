@@ -14,4 +14,5 @@ public class DeckResponse {
     private String description;
     private long questionCount;
     private LocalDateTime createdAt;
+    private boolean isSample;
 }

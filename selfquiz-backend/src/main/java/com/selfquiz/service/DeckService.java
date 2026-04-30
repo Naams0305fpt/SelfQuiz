@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import com.selfquiz.security.SecurityUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -71,13 +72,22 @@ public class DeckService {
         long questionCount = deck.getQuestions().stream()
                 .filter(q -> !q.isDeleted())
                 .count();
+        boolean isSample = false;
+        try {
+            Long currentUserId = SecurityUtils.getCurrentUserId();
+            isSample = deck.getCreatedBy() != null && !deck.getCreatedBy().equals(currentUserId);
+        } catch (Exception e) {
+            // Not authenticated
+        }
+
         return new DeckResponse(
                 deck.getId(),
                 deck.getSubject().getId(),
                 deck.getName(),
                 deck.getDescription(),
                 questionCount,
-                deck.getCreatedAt()
+                deck.getCreatedAt(),
+                isSample
         );
     }
 }

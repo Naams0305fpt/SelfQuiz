@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import com.selfquiz.security.SecurityUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +20,8 @@ public class SubjectService {
     private final SubjectRepository subjectRepository;
 
     public List<SubjectResponse> getAllSubjects() {
-        return subjectRepository.findAll().stream()
+        Long currentUserId = SecurityUtils.getCurrentUserId();
+        return subjectRepository.findUserAndAdminSubjects(currentUserId).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -71,12 +73,21 @@ public class SubjectService {
         int deckCount = (int) subject.getDecks().stream()
                 .filter(d -> !d.isDeleted())
                 .count();
+        boolean isSample = false;
+        try {
+            Long currentUserId = SecurityUtils.getCurrentUserId();
+            isSample = subject.getCreatedBy() != null && !subject.getCreatedBy().equals(currentUserId);
+        } catch (Exception e) {
+            // Not authenticated
+        }
+
         return new SubjectResponse(
                 subject.getId(),
                 subject.getName(),
                 subject.getDescription(),
                 deckCount,
-                subject.getCreatedAt()
+                subject.getCreatedAt(),
+                isSample
         );
     }
 }

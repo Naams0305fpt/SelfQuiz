@@ -13,4 +13,5 @@ public class SubjectResponse {
     private String description;
     private int deckCount;
     private LocalDateTime createdAt;
+    private boolean isSample;
 }
