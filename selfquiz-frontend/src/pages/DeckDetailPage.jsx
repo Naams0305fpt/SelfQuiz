@@ -123,8 +123,12 @@ export default function DeckDetailPage() {
             style={questions.length === 0 ? { opacity: 0.4, cursor: 'not-allowed' } : {}}>
             🎯 Làm bài
           </Link>
-          <button className="btn btn-secondary" onClick={() => setShowImportModal(true)}>📥 Import</button>
-          <button className="btn btn-primary" onClick={openCreate}>＋ Thêm câu hỏi</button>
+          {!(deck?.sample || deck?.isSample) && (
+            <>
+              <button className="btn btn-secondary" onClick={() => setShowImportModal(true)}>📥 Import</button>
+              <button className="btn btn-primary" onClick={openCreate}>＋ Thêm câu hỏi</button>
+            </>
+          )}
         </div>
       </div>
 
@@ -168,8 +172,12 @@ export default function DeckDetailPage() {
                       <Markdown>{q.content}</Markdown>
                     </div>
                     <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                      <button className="btn-icon" onClick={() => openEdit(q)} title="Sửa câu hỏi">✏️</button>
-                      <button className="btn-icon" onClick={() => setDeleteTarget(q)} title="Xóa câu hỏi">🗑️</button>
+                      {!(deck?.sample || deck?.isSample) && (
+                        <>
+                          <button className="btn-icon" onClick={() => openEdit(q)} title="Sửa câu hỏi">✏️</button>
+                          <button className="btn-icon" onClick={() => setDeleteTarget(q)} title="Xóa câu hỏi">🗑️</button>
+                        </>
+                      )}
                     </div>
                   </div>
                   

@@ -8,11 +8,16 @@ import TestConfigPage from './pages/TestConfigPage';
 import TestTakePage from './pages/TestTakePage';
 import TestResultPage from './pages/TestResultPage';
 import HistoryPage from './pages/HistoryPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import { AuthProvider } from './contexts/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthProvider>
       <Toaster
         position="top-right"
         toastOptions={{
@@ -25,16 +30,21 @@ export default function App() {
         }}
       />
       <Routes>
-        <Route element={<Layout />}>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/" element={<HomePage />} />
           <Route path="/subjects/:id" element={<SubjectDetailPage />} />
           <Route path="/decks/:id" element={<DeckDetailPage />} />
           <Route path="/test/config/:deckId" element={<TestConfigPage />} />
           <Route path="/history" element={<HistoryPage />} />
         </Route>
-        <Route path="/test/take" element={<TestTakePage />} />
-        <Route path="/test/result" element={<TestResultPage />} />
+        
+        <Route path="/test/take" element={<ProtectedRoute><TestTakePage /></ProtectedRoute>} />
+        <Route path="/test/result" element={<ProtectedRoute><TestResultPage /></ProtectedRoute>} />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

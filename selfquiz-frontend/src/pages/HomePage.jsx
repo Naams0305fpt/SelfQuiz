@@ -89,8 +89,14 @@ export default function HomePage() {
           {subjects.map((s) => (
             <Link to={`/subjects/${s.id}`} key={s.id} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="card-actions">
-                <button className="btn-icon" onClick={(e) => openEdit(e, s)} title="Sửa">✏️</button>
-                <button className="btn-icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(s); }} title="Xóa">🗑️</button>
+                {s.sample || s.isSample ? (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent-light)', background: 'rgba(108, 92, 231, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>MẪU</span>
+                ) : (
+                  <>
+                    <button className="btn-icon" onClick={(e) => openEdit(e, s)} title="Sửa">✏️</button>
+                    <button className="btn-icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(s); }} title="Xóa">🗑️</button>
+                  </>
+                )}
               </div>
               <div className="card-title">{s.name}</div>
               {s.description && <div className="card-desc">{s.description}</div>}

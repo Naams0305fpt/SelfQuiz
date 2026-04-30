@@ -87,7 +87,9 @@ export default function SubjectDetailPage() {
           <h1>{subject?.name}</h1>
           {subject?.description && <p className="subtitle">{subject.description}</p>}
         </div>
-        <button className="btn btn-primary" onClick={openCreate}>＋ Thêm bộ đề</button>
+        {!(subject?.sample || subject?.isSample) && (
+          <button className="btn btn-primary" onClick={openCreate}>＋ Thêm bộ đề</button>
+        )}
       </div>
 
       {decks.length === 0 ? (
@@ -100,8 +102,14 @@ export default function SubjectDetailPage() {
           {decks.map((d) => (
             <Link to={`/decks/${d.id}`} key={d.id} className="card" style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="card-actions">
-                <button className="btn-icon" onClick={(e) => openEdit(e, d)} title="Sửa">✏️</button>
-                <button className="btn-icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(d); }} title="Xóa">🗑️</button>
+                {d.sample || d.isSample ? (
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--accent-light)', background: 'rgba(108, 92, 231, 0.1)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>MẪU</span>
+                ) : (
+                  <>
+                    <button className="btn-icon" onClick={(e) => openEdit(e, d)} title="Sửa">✏️</button>
+                    <button className="btn-icon" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget(d); }} title="Xóa">🗑️</button>
+                  </>
+                )}
               </div>
               <div className="card-title">{d.name}</div>
               {d.description && <div className="card-desc">{d.description}</div>}
